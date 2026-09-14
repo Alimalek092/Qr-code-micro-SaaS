@@ -1,0 +1,798 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>QrForge - QR Code Generator</title>
+    <meta
+      name="description"
+      content="Generate QR codes for links, text, WiFi, email, and phone numbers. Export as PNG, SVG, or JPG."
+    />
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+    <style>
+      :root {
+        --ink: #171717;
+        --paper: #fbf6e6;
+        --orange: #ff5a2f;
+        --yellow: #ffd95a;
+        --green: #a8d5a4;
+        --white: #fffef8;
+        --muted: #4b4b4b;
+        font-family:
+          Arial Black, Arial, Helvetica, ui-sans-serif, system-ui, sans-serif;
+        color: var(--ink);
+        background: var(--paper);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        min-width: 320px;
+        min-height: 100vh;
+        margin: 0;
+        background: var(--paper);
+      }
+
+      button,
+      textarea,
+      input {
+        font: inherit;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 56px;
+        padding: 0 7vw;
+        border-bottom: 2px solid var(--ink);
+        background: var(--paper);
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 950;
+      }
+
+      .logo {
+        display: grid;
+        place-items: center;
+        width: 38px;
+        height: 38px;
+        border: 2px solid var(--ink);
+        border-radius: 5px;
+        background: var(--orange);
+        box-shadow: 4px 4px 0 var(--ink);
+      }
+
+      .nav-actions {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        font-size: 14px;
+      }
+
+      .login {
+        background: transparent;
+        border: 0;
+        font-weight: 900;
+      }
+
+      .signup,
+      .primary-btn {
+        min-height: 40px;
+        padding: 0 20px;
+        border: 2px solid var(--ink);
+        border-radius: 4px;
+        color: var(--ink);
+        background: var(--orange);
+        box-shadow: 4px 4px 0 var(--ink);
+        font-weight: 950;
+      }
+
+      main {
+        width: min(1160px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 78px 0 56px;
+      }
+
+      .hero {
+        text-align: center;
+      }
+
+      .stats {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 24px;
+      }
+
+      .stat {
+        padding: 8px 15px;
+        color: #fff;
+        background: var(--ink);
+        font-size: 13px;
+        font-weight: 950;
+        transform: rotate(-1deg);
+      }
+
+      .stat:nth-child(2) {
+        transform: rotate(1deg);
+      }
+
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 36px;
+        padding: 0 36px;
+        border: 2px solid var(--ink);
+        background: var(--yellow);
+        box-shadow: 3px 3px 0 var(--ink);
+        font-size: 14px;
+        font-weight: 950;
+      }
+
+      h1 {
+        max-width: 920px;
+        margin: 26px auto 0;
+        color: var(--ink);
+        font-size: clamp(44px, 7vw, 92px);
+        line-height: 0.92;
+        letter-spacing: 0;
+        text-transform: uppercase;
+      }
+
+      .orange-slab {
+        width: min(780px, 100%);
+        margin: 16px auto 22px;
+        padding: 10px 24px 14px;
+        border: 2px solid var(--ink);
+        background: var(--orange);
+        box-shadow: 5px 5px 0 var(--ink);
+        transform: rotate(0.8deg);
+      }
+
+      .orange-slab span {
+        display: block;
+        transform: rotate(-0.8deg);
+        color: var(--ink);
+        font-size: clamp(34px, 5.3vw, 62px);
+        line-height: 0.92;
+        font-weight: 950;
+        text-transform: uppercase;
+      }
+
+      .subcopy {
+        max-width: 690px;
+        margin: 0 auto 38px;
+        color: #333;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 19px;
+        font-weight: 700;
+        line-height: 1.5;
+      }
+
+      .workspace {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 390px;
+        gap: 20px;
+        align-items: start;
+      }
+
+      .panel {
+        border: 2px solid var(--ink);
+        border-radius: 6px;
+        background: var(--white);
+        box-shadow: 6px 6px 0 var(--ink);
+      }
+
+      .editor {
+        padding: 24px;
+        text-align: left;
+      }
+
+      .panel-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 14px;
+      }
+
+      .panel-title h2 {
+        margin: 0;
+        font-size: 22px;
+        line-height: 1;
+        text-transform: uppercase;
+      }
+
+      .mini-label {
+        display: inline-flex;
+        align-items: center;
+        min-height: 28px;
+        padding: 0 12px;
+        border: 2px solid var(--ink);
+        background: var(--yellow);
+        box-shadow: 3px 3px 0 var(--ink);
+        font-size: 12px;
+        font-weight: 950;
+        white-space: nowrap;
+      }
+
+      label,
+      .control-title {
+        display: block;
+        margin-bottom: 10px;
+        font-size: 14px;
+        font-weight: 950;
+        text-transform: uppercase;
+      }
+
+      textarea {
+        width: 100%;
+        min-height: 154px;
+        padding: 16px;
+        resize: vertical;
+        border: 2px solid var(--ink);
+        border-radius: 4px;
+        color: var(--ink);
+        background: #fff;
+        box-shadow: 4px 4px 0 var(--ink);
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 17px;
+        font-weight: 700;
+        line-height: 1.45;
+      }
+
+      textarea:focus,
+      button:focus-visible,
+      input:focus-visible {
+        outline: 3px solid var(--yellow);
+        outline-offset: 3px;
+      }
+
+      .quick-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 16px;
+      }
+
+      .quick-row button,
+      .segmented button {
+        min-height: 36px;
+        padding: 0 14px;
+        border: 2px solid var(--ink);
+        border-radius: 4px;
+        color: var(--ink);
+        background: #fff;
+        box-shadow: 3px 3px 0 var(--ink);
+        font-size: 13px;
+        font-weight: 950;
+      }
+
+      .quick-row button:hover,
+      .segmented button:hover,
+      .icon-button:hover,
+      .downloads button:hover {
+        transform: translate(1px, 1px);
+        box-shadow: 2px 2px 0 var(--ink);
+      }
+
+      .group {
+        margin-top: 24px;
+        padding-top: 22px;
+        border-top: 2px solid var(--ink);
+      }
+
+      .colors {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .color-field {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 56px;
+        margin: 0;
+        padding: 9px 12px;
+        border: 2px solid var(--ink);
+        border-radius: 4px;
+        background: #fff;
+        box-shadow: 3px 3px 0 var(--ink);
+        text-transform: none;
+      }
+
+      .color-field span {
+        font-size: 14px;
+        font-weight: 950;
+        text-transform: uppercase;
+      }
+
+      input[type="color"] {
+        width: 44px;
+        height: 34px;
+        padding: 0;
+        border: 2px solid var(--ink);
+        border-radius: 3px;
+        background: transparent;
+      }
+
+      .range-row {
+        display: grid;
+        grid-template-columns: 72px minmax(0, 1fr) 78px;
+        align-items: center;
+        gap: 12px;
+        min-height: 42px;
+        margin: 12px 0 0;
+        font-family: Arial, Helvetica, sans-serif;
+        font-weight: 900;
+      }
+
+      input[type="range"] {
+        width: 100%;
+        accent-color: var(--orange);
+      }
+
+      .range-row strong {
+        text-align: right;
+      }
+
+      .segmented {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .segmented button.active {
+        background: var(--green);
+      }
+
+      .preview {
+        position: sticky;
+        top: 18px;
+        padding: 18px;
+      }
+
+      .preview-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+
+      .preview-top span,
+      .preview-top strong {
+        display: block;
+      }
+
+      .preview-top span {
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 13px;
+        font-weight: 800;
+        color: var(--muted);
+      }
+
+      .preview-top strong {
+        font-size: 18px;
+        text-transform: uppercase;
+      }
+
+      .icon-button {
+        display: grid;
+        place-items: center;
+        width: 42px;
+        height: 42px;
+        border: 2px solid var(--ink);
+        border-radius: 4px;
+        color: var(--ink);
+        background: var(--yellow);
+        box-shadow: 3px 3px 0 var(--ink);
+      }
+
+      .qr-stage {
+        display: grid;
+        place-items: center;
+        min-height: 350px;
+        aspect-ratio: 1;
+        padding: 20px;
+        border: 2px solid var(--ink);
+        border-radius: 4px;
+        background: var(--green);
+        overflow: hidden;
+      }
+
+      #qr svg {
+        display: block;
+        width: min(100%, 300px);
+        height: auto;
+        border: 2px solid var(--ink);
+        box-shadow: 5px 5px 0 var(--ink);
+      }
+
+      .preview-meta {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 14px;
+      }
+
+      .preview-meta div {
+        min-height: 58px;
+        padding: 10px;
+        border: 2px solid var(--ink);
+        border-radius: 4px;
+        background: #fff;
+      }
+
+      .preview-meta span,
+      .preview-meta strong {
+        display: block;
+      }
+
+      .preview-meta span {
+        color: var(--muted);
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .preview-meta strong {
+        margin-top: 4px;
+        font-size: 14px;
+        text-transform: uppercase;
+      }
+
+      .downloads {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 16px;
+      }
+
+      .downloads button {
+        min-height: 48px;
+        border: 2px solid var(--ink);
+        border-radius: 4px;
+        color: var(--ink);
+        background: var(--orange);
+        box-shadow: 4px 4px 0 var(--ink);
+        font-size: 15px;
+        font-weight: 950;
+      }
+
+      .downloads button:nth-child(2) {
+        background: var(--yellow);
+      }
+
+      .downloads button:nth-child(3) {
+        background: var(--green);
+      }
+
+      .status {
+        min-height: 24px;
+        margin-top: 14px;
+        color: var(--muted);
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 14px;
+        font-weight: 800;
+        text-align: center;
+      }
+
+      @media (max-width: 900px) {
+        .topbar {
+          padding: 0 18px;
+        }
+
+        .nav-actions {
+          gap: 12px;
+        }
+
+        .login {
+          display: none;
+        }
+
+        main {
+          width: min(100% - 20px, 560px);
+          padding: 42px 0;
+        }
+
+        .orange-slab {
+          padding-inline: 14px;
+        }
+
+        .workspace {
+          grid-template-columns: 1fr;
+        }
+
+        .preview {
+          position: static;
+        }
+
+        .colors,
+        .segmented,
+        .downloads,
+        .preview-meta {
+          grid-template-columns: 1fr;
+        }
+
+        .range-row {
+          grid-template-columns: 1fr;
+          gap: 4px;
+        }
+
+        .range-row strong {
+          text-align: left;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none">
+            <path d="M5 5h5v5H5V5Zm9 0h5v5h-5V5ZM5 14h5v5H5v-5Zm9 0h2v2h-2v-2Zm4 0h1v5h-5v-1h4v-4Z" stroke="#171717" stroke-width="2" stroke-linejoin="round" />
+          </svg>
+        </div>
+        <span>QR FORGE</span>
+      </div>
+      <div class="nav-actions">
+        <button class="login" type="button">Log In</button>
+        <button class="signup" type="button">Sign Up</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="stats">
+          <span class="stat">PNG + SVG + JPG</span>
+          <span class="stat">LIVE PREVIEW</span>
+          <span class="stat">NO LOGIN</span>
+        </div>
+        <div class="tag">MAKE SCANNABLE LINKS FAST</div>
+        <h1>TYPE ANY LINK.</h1>
+        <div class="orange-slab"><span>GET A QR CODE.</span></div>
+        <p class="subcopy">
+          Create clean QR codes for websites, menus, WiFi, email, calls, and campaigns.
+          Change colors, set size, and download instantly.
+        </p>
+      </section>
+
+      <section class="workspace" aria-label="QR code generator workspace">
+        <div class="panel editor">
+          <div class="panel-title">
+            <h2>Create QR</h2>
+            <span class="mini-label">FREE TOOL</span>
+          </div>
+
+          <label for="content">Text or URL</label>
+          <textarea id="content" spellcheck="false">https://your-next-tool.vercel.app</textarea>
+          <div class="quick-row" aria-label="Quick QR templates">
+            <button type="button" data-template="url">URL</button>
+            <button type="button" data-template="wifi">WiFi</button>
+            <button type="button" data-template="email">Email</button>
+            <button type="button" data-template="phone">Phone</button>
+            <button type="button" data-template="clear">Clear</button>
+          </div>
+
+          <div class="group">
+            <div class="control-title">Colors</div>
+            <div class="colors">
+              <label class="color-field">
+                <span>Code</span>
+                <input id="fg" type="color" value="#171717" />
+              </label>
+              <label class="color-field">
+                <span>Background</span>
+                <input id="bg" type="color" value="#fffef8" />
+              </label>
+            </div>
+          </div>
+
+          <div class="group">
+            <div class="control-title">Output</div>
+            <label class="range-row">
+              <span>Size</span>
+              <input id="size" type="range" min="256" max="1200" step="8" value="720" />
+              <strong id="sizeText">720px</strong>
+            </label>
+            <label class="range-row">
+              <span>Margin</span>
+              <input id="margin" type="range" min="0" max="8" step="1" value="2" />
+              <strong id="marginText">2</strong>
+            </label>
+          </div>
+
+          <div class="group">
+            <div class="control-title">Error correction</div>
+            <div class="segmented" id="levels">
+              <button type="button" data-level="L" title="Smallest file">Light</button>
+              <button type="button" data-level="M" class="active" title="Good default">Normal</button>
+              <button type="button" data-level="Q" title="Better recovery">Strong</button>
+              <button type="button" data-level="H" title="Best recovery">Max</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel preview">
+          <div class="preview-top">
+            <div>
+              <span>Live preview</span>
+              <strong id="count">0 characters</strong>
+            </div>
+            <button class="icon-button" id="copySvg" type="button" title="Copy SVG code" aria-label="Copy SVG code">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M8 8h11v11H8V8Zm-3 8H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h11a1 1 0 0 1 1 1v1" stroke="currentColor" stroke-width="2" />
+              </svg>
+            </button>
+          </div>
+          <div class="qr-stage" id="qr"></div>
+          <div class="preview-meta">
+            <div>
+              <span>Format</span>
+              <strong>Static QR</strong>
+            </div>
+            <div>
+              <span>Privacy</span>
+              <strong>Browser Only</strong>
+            </div>
+          </div>
+          <div class="downloads">
+            <button id="png" type="button">PNG</button>
+            <button id="svg" type="button">SVG</button>
+            <button id="jpg" type="button">JPG</button>
+          </div>
+          <div class="status" id="status">Everything runs in the browser.</div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const content = document.querySelector("#content");
+      const fg = document.querySelector("#fg");
+      const bg = document.querySelector("#bg");
+      const size = document.querySelector("#size");
+      const margin = document.querySelector("#margin");
+      const sizeText = document.querySelector("#sizeText");
+      const marginText = document.querySelector("#marginText");
+      const count = document.querySelector("#count");
+      const qrBox = document.querySelector("#qr");
+      const statusText = document.querySelector("#status");
+      const levelButtons = [...document.querySelectorAll("[data-level]")];
+      const templateButtons = [...document.querySelectorAll("[data-template]")];
+      let activeLevel = "M";
+
+      function escapeAttr(value) {
+        return String(value).replace(/[&<>"']/g, (char) => {
+          const entities = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+          return entities[char];
+        });
+      }
+
+      function filename() {
+        return (
+          content.value
+            .trim()
+            .replace(/^https?:\/\//, "")
+            .replace(/[^a-z0-9]+/gi, "-")
+            .replace(/^-|-$/g, "")
+            .slice(0, 36)
+            .toLowerCase() || "qr-code"
+        );
+      }
+
+      function buildSvg(qr) {
+        const modules = qr.getModuleCount();
+        const quiet = Number(margin.value);
+        const total = modules + quiet * 2;
+        const blocks = [];
+        const codeColor = escapeAttr(fg.value);
+        const bgColor = escapeAttr(bg.value);
+
+        for (let row = 0; row < modules; row += 1) {
+          for (let col = 0; col < modules; col += 1) {
+            if (qr.isDark(row, col)) {
+              blocks.push(`<rect x="${col + quiet}" y="${row + quiet}" width="1" height="1" fill="${codeColor}"/>`);
+            }
+          }
+        }
+
+        return `<svg viewBox="0 0 ${total} ${total}" width="${size.value}" height="${size.value}" shape-rendering="crispEdges" role="img" aria-label="Generated QR code"><rect x="0" y="0" width="${total}" height="${total}" fill="${bgColor}"/>${blocks.join("")}</svg>`;
+      }
+
+      function render() {
+        const value = content.value.trim() || " ";
+        const qr = qrcode(0, activeLevel);
+        qr.addData(value);
+        qr.make();
+        qrBox.innerHTML = buildSvg(qr);
+        sizeText.textContent = `${size.value}px`;
+        marginText.textContent = margin.value;
+        count.textContent = `${content.value.trim().length} characters`;
+        statusText.textContent =
+          fg.value.toLowerCase() === bg.value.toLowerCase()
+            ? "Use different colors so scanners can read it."
+            : "Everything runs in the browser.";
+      }
+
+      function download(blob, name) {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = name;
+        link.click();
+        URL.revokeObjectURL(url);
+      }
+
+      function svgBlob() {
+        const svg = qrBox.querySelector("svg").cloneNode(true);
+        svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+        svg.setAttribute("width", size.value);
+        svg.setAttribute("height", size.value);
+        return new Blob([svg.outerHTML], { type: "image/svg+xml" });
+      }
+
+      async function raster(type) {
+        const blob = svgBlob();
+        const url = URL.createObjectURL(blob);
+        const image = new Image();
+        image.src = url;
+        await image.decode();
+        const canvas = document.createElement("canvas");
+        canvas.width = Number(size.value);
+        canvas.height = Number(size.value);
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = bg.value;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+        URL.revokeObjectURL(url);
+        const mime = type === "jpg" ? "image/jpeg" : "image/png";
+        canvas.toBlob((file) => download(file, `${filename()}.${type}`), mime, 0.94);
+      }
+
+      [content, fg, bg, size, margin].forEach((item) => item.addEventListener("input", render));
+      levelButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          activeLevel = button.dataset.level;
+          levelButtons.forEach((next) => next.classList.toggle("active", next === button));
+          render();
+        });
+      });
+      templateButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          const templates = {
+            url: "https://example.com",
+            wifi: "WIFI:T:WPA;S:Your WiFi Name;P:YourPassword;;",
+            email: "mailto:hello@example.com?subject=Hello",
+            phone: "tel:+911234567890",
+            clear: "",
+          };
+          content.value = templates[button.dataset.template];
+          content.focus();
+          render();
+        });
+      });
+
+      document.querySelector("#svg").addEventListener("click", () => download(svgBlob(), `${filename()}.svg`));
+      document.querySelector("#png").addEventListener("click", () => raster("png"));
+      document.querySelector("#jpg").addEventListener("click", () => raster("jpg"));
+      document.querySelector("#copySvg").addEventListener("click", async () => {
+        await navigator.clipboard.writeText(qrBox.querySelector("svg").outerHTML);
+        statusText.textContent = "SVG copied.";
+        setTimeout(render, 1500);
+      });
+
+      render();
+    </script>
+  </body>
+</html>
